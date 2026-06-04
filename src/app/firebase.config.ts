@@ -1,10 +1,9 @@
 export const firebaseConfig = {
-  projectId: "my-lean-canvas-staging",
-  appId: "1:48392677858:web:3aefc67e6f0e69823eb1bb",
-  apiKey: "AIzaSyAD3EbmguGkod9v_9R4AC2DGTkRiwRBqBA",
-  authDomain: "my-lean-canvas-staging.firebaseapp.com",
-  firestoreDatabaseId: "ai-studio-0e3c1d42-d535-4098-bd70-b5d4b90611a4",
-  storageBucket: "my-lean-canvas-staging.firebasestorage.app",
-  messagingSenderId: "48392677858",
-  measurementId: ""
-};
+  apiKey: "AIzaSyDxRkwEVmu-LAyPTtw_iQ0SstjcSK9zFDU",
+  authDomain: "badminton-fee-calculator.firebaseapp.com",
+  projectId: "badminton-fee-calculator",
+  storageBucket: "badminton-fee-calculator.firebasestorage.app",
+  messagingSenderId: "795404284443",
+  appId: "1:795404284443:web:0f91282d9f48142bda3ebe",
+  measurementId: "G-QZV1TC3H2Z"
+}; 
