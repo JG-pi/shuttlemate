@@ -49,8 +49,8 @@
       <div class="mt-8 p-5 bg-slate-50 border border-slate-200 rounded-2xl text-left text-xs space-y-2.5 text-slate-700" id="allowed-admins-list">
         <p class="font-bold text-slate-900 font-display text-xs uppercase tracking-wider">Authorized Admin Emails:</p>
         <ul class="list-disc pl-4 space-y-1.5 font-mono text-[11px] text-slate-600">
-          <li>jamesguoas&#144;gmail.com</li>
-          <li>khoiphan21&#144;gmail.com</li>
+          <li>jamesguoas&#64;gmail.com</li>
+          <li>khoiphan21&#64;gmail.com</li>
         </ul>
       </div>
 
@@ -108,18 +108,35 @@
       <section class="lg:col-span-12 xl:col-span-5 bg-white border border-slate-200 rounded-[2.5rem] shadow-sm p-6 sm:p-8" id="event-builder-panel">
         <div class="border-b border-slate-100 pb-5 mb-6 flex items-center gap-3">
           <div class="p-2 bg-slate-50 text-slate-800 border border-slate-100 rounded-xl">
-            <mat-icon class="text-lg leading-none">add_circle_outline</mat-icon>
+            <mat-icon class="text-lg leading-none">{{ editingEventId() ? 'edit_note' : 'add_circle_outline' }}</mat-icon>
           </div>
-          <div>
-            <h3 class="text-xl font-display font-black tracking-tight text-slate-900">Schedule New Event</h3>
-            <p class="text-slate-400 text-xs mt-0.5 font-sans">Publish an active event on the catalog board</p>
+          <div class="min-w-0">
+            <h3 class="text-xl font-display font-black tracking-tight text-slate-900">{{ eventFormTitle }}</h3>
+            <p class="text-slate-400 text-xs mt-0.5 font-sans">{{ eventFormDescription }}</p>
           </div>
+          @if (editingEventId()) {
+            <button
+              type="button"
+              (click)="cancelEditEvent()"
+              class="ml-auto inline-flex items-center justify-center w-9 h-9 rounded-lg border border-slate-200 text-slate-400 hover:text-slate-900 hover:bg-slate-50 transition-colors"
+              title="Cancel editing"
+            >
+              <mat-icon class="text-lg">close</mat-icon>
+            </button>
+          }
         </div>
 
-        <form [formGroup]="eventForm" (ngSubmit)="onCreateEvent()" class="space-y-5" id="event-creation-form">
+        @if (editingEventId()) {
+          <div class="mb-5 rounded-2xl border border-indigo-100 bg-indigo-50 px-4 py-3 text-xs text-indigo-900 flex items-start gap-2">
+            <mat-icon class="text-base text-indigo-600 mt-0.5">admin_panel_settings</mat-icon>
+            <span>You are editing an existing event. Changes are saved by administrators only and will update the public event card.</span>
+          </div>
+        }
+
+        <form [formGroup]="eventForm" (ngSubmit)="handleEventFormSubmit()" class="space-y-5" id="event-creation-form">
           <!-- Name -->
           <div class="space-y-1.5" id="ctrl-name-container">
-            <label for="name" class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Event Title Name</label>
+            <label for="name" class="block text-xs font-bold text-slate-400 uppercase tracking-wider font-sans">Event Name</label>
             <input
               id="name"
               type="text"
@@ -127,38 +144,55 @@
               placeholder="e.g., Summer Retreat 2026"
               class="block w-full px-4 py-2.5 bg-slate-55 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-slate-800 focus:ring-1 focus:ring-slate-800 transition-colors font-sans"
             />
+            @if (getFieldError('name'); as error) {
+              <p class="text-xs text-red-600 font-sans">{{ error }}</p>
+            }
           </div>
 
           <!-- Location & Date -->
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <!-- Location -->
             <div class="space-y-1.5" id="ctrl-location-container">
-              <label for="location" class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Location</label>
-              <input
+              <label for="location" class="block text-xs font-bold text-slate-400 uppercase tracking-wider font-sans">Location</label>
+              <select
                 id="location"
-                type="text"
-                formControlName="location"
-                placeholder="HQ Conference Room"
+                formControlName="locationId"
                 class="block w-full px-4 py-2.5 bg-slate-55 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-slate-800 focus:ring-1 focus:ring-slate-800 transition-colors font-sans"
-              />
+              >
+                <option value="">Select a saved location</option>
+                @for (location of locationList(); track location.id) {
+                  <option [value]="location.id">{{ location.name }}</option>
+                }
+              </select>
+              @if (getSelectedRateLocation(); as selectedLocation) {
+                <p class="text-xs text-slate-400 font-sans">{{ selectedLocation.pricePerCourtHour | currency:'USD' }} per court hour</p>
+              } @else if (locationList().length === 0) {
+                <p class="text-xs text-amber-700 font-sans">Add a location in Admin Settings before scheduling.</p>
+              }
+              @if (getFieldError('locationId'); as error) {
+                <p class="text-xs text-red-600 font-sans">{{ error }}</p>
+              }
             </div>
             <!-- Date -->
             <div class="space-y-1.5" id="ctrl-date-container">
-              <label for="date" class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Date & Time</label>
+              <label for="date" class="block text-xs font-bold text-slate-400 uppercase tracking-wider font-sans">Date & Time</label>
               <input
                 id="date"
                 type="datetime-local"
                 formControlName="date"
                 class="block w-full px-4 py-2.5 bg-slate-55 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-slate-800 focus:ring-1 focus:ring-slate-800 transition-colors font-sans"
               />
+              @if (getFieldError('date'); as error) {
+                <p class="text-xs text-red-600 font-sans">{{ error }}</p>
+              }
             </div>
           </div>
 
-          <!-- Capacity & Cost -->
+          <!-- Capacity & Court Cost Calculator -->
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <!-- Capacity -->
             <div class="space-y-1.5" id="ctrl-capacity-container">
-              <label for="capacity" class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Max. Capacity Limit</label>
+              <label for="capacity" class="block text-xs font-bold text-slate-400 uppercase tracking-wider font-sans">Capacity</label>
               <input
                 id="capacity"
                 type="number"
@@ -166,25 +200,62 @@
                 placeholder="20"
                 class="block w-full px-4 py-2.5 bg-slate-55 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-slate-800 focus:ring-1 focus:ring-slate-800 transition-colors font-mono font-bold"
               />
+              @if (getFieldError('capacity'); as error) {
+                <p class="text-xs text-red-600 font-sans">{{ error }}</p>
+              }
             </div>
+
+            <!-- Court Count -->
+            <div class="space-y-1.5" id="ctrl-court-count-container">
+              <label for="courtCount" class="block text-xs font-bold text-slate-400 uppercase tracking-wider font-sans">Courts Booked</label>
+              <input
+                id="courtCount"
+                type="number"
+                formControlName="courtCount"
+                min="1"
+                step="1"
+                class="block w-full px-4 py-2.5 bg-slate-55 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-slate-800 focus:ring-1 focus:ring-slate-800 transition-colors font-mono font-bold"
+              />
+              @if (getFieldError('courtCount'); as error) {
+                <p class="text-xs text-red-600 font-sans">{{ error }}</p>
+              }
+            </div>
+
+            <!-- Duration -->
+            <div class="space-y-1.5" id="ctrl-duration-container">
+              <label for="durationHours" class="block text-xs font-bold text-slate-400 uppercase tracking-wider font-sans">Duration (Hours)</label>
+              <input
+                id="durationHours"
+                type="number"
+                formControlName="durationHours"
+                min="0.25"
+                step="0.25"
+                class="block w-full px-4 py-2.5 bg-slate-55 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-slate-800 focus:ring-1 focus:ring-slate-800 transition-colors font-mono font-bold"
+              />
+              @if (getFieldError('durationHours'); as error) {
+                <p class="text-xs text-red-600 font-sans">{{ error }}</p>
+              }
+            </div>
+
             <!-- Cost -->
             <div class="space-y-1.5" id="ctrl-cost-container">
-              <label for="cost" class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Total Booking Cost ($)</label>
+              <label for="cost" class="block text-xs font-bold text-slate-400 uppercase tracking-wider font-sans">Calculated Total Cost ($)</label>
               <input
                 id="cost"
                 type="number"
                 formControlName="cost"
-                placeholder="200"
-                class="block w-full px-4 py-2.5 bg-slate-55 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-slate-800 focus:ring-1 focus:ring-slate-800 transition-colors font-mono font-bold"
+                readonly
+                class="block w-full px-4 py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none font-mono font-bold"
               />
+              <p class="text-xs text-slate-400 font-sans">Only this total is shown to users.</p>
             </div>
           </div>
 
           <!-- Additional Information (Markdown) -->
           <div class="space-y-1.5" id="ctrl-info-container">
-            <label for="additionalInfo" class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans flex items-center justify-between">
-              <span>Description / Notes (Markdown)</span>
-              <span class="text-[9px] text-slate-400 font-sans lowercase font-normal">Supports bullet lists and bold text</span>
+            <label for="additionalInfo" class="block text-xs font-bold text-slate-400 uppercase tracking-wider font-sans flex items-center justify-between">
+              <span>Notes</span>
+              <span class="text-xs text-slate-400 font-sans lowercase font-normal">Markdown supported</span>
             </label>
             <textarea
               id="additionalInfo"
@@ -193,12 +264,15 @@
               rows="6"
               class="block w-full px-4 py-3 bg-slate-55 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-slate-800 focus:ring-1 focus:ring-slate-800 transition-colors font-mono text-slate-700"
             ></textarea>
+            @if (getFieldError('additionalInfo'); as error) {
+              <p class="text-xs text-red-600 font-sans">{{ error }}</p>
+            }
           </div>
 
           <!-- Real-Time Markdown Preview box (Embedded Bento sub-card style) -->
           @if (additionalInfoPreview) {
             <div class="p-5 bg-slate-50 border border-slate-200/70 rounded-2xl mt-4 space-y-2 animate-fade-in" id="markdown-live-preview-box">
-              <div class="text-[10px] uppercase text-indigo-600 font-bold tracking-wider font-sans">Live Markdown Preview</div>
+              <div class="text-xs uppercase text-indigo-600 font-bold tracking-wider font-sans">Preview</div>
               <div 
                 class="prose prose-sm prose-slate text-xs text-slate-600 prose-p:my-1 prose-ul:list-disc prose-ul:pl-4"
                 [innerHTML]="additionalInfoPreview | markdown"
@@ -215,10 +289,10 @@
           >
             @if (submitting()) {
               <span class="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-              Scheduling Event...
+              {{ editingEventId() ? 'Saving Changes...' : 'Scheduling Event...' }}
             } @else {
-              <mat-icon class="text-base leading-none">check</mat-icon>
-              Publish & Schedule Event
+              <mat-icon class="text-base leading-none">{{ editingEventId() ? 'save' : 'check' }}</mat-icon>
+              {{ editingEventId() ? 'Save Event Changes' : 'Publish & Schedule Event' }}
             }
           </button>
         </form>
@@ -226,17 +300,179 @@
 
       <!-- COLUMN 2: PARTICIPANTS & STATE MANAGER (span-7) -->
       <section class="lg:col-span-12 xl:col-span-7 space-y-8" id="admin-management-panel">
+
+        <!-- Admin Location Settings -->
+        <div class="bg-white border border-slate-200 rounded-[2.5rem] shadow-sm p-6 sm:p-8" id="admin-location-settings">
+          <div class="border-b border-slate-100 pb-4 mb-5 flex items-start justify-between gap-4">
+            <div>
+              <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider font-sans select-none">Admin Settings</h4>
+              <p class="text-lg font-display font-black text-slate-900 mt-1">Location Rates</p>
+            </div>
+            <div class="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-700">
+              <mat-icon class="text-xl">settings</mat-icon>
+            </div>
+          </div>
+
+          <form [formGroup]="locationForm" (ngSubmit)="handleCreateLocation()" class="grid grid-cols-1 md:grid-cols-[1fr_170px_auto] gap-3 items-end">
+            <div class="space-y-1.5">
+              <label for="locationName" class="block text-xs font-bold text-slate-400 uppercase tracking-wider font-sans">Location Name</label>
+              <input
+                id="locationName"
+                type="text"
+                formControlName="name"
+                placeholder="Sky Badminton"
+                class="block w-full px-4 py-2.5 bg-slate-55 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-slate-800 focus:ring-1 focus:ring-slate-800 transition-colors font-sans"
+              />
+            </div>
+            <div class="space-y-1.5">
+              <label for="locationRate" class="block text-xs font-bold text-slate-400 uppercase tracking-wider font-sans">$/Court Hour</label>
+              <input
+                id="locationRate"
+                type="number"
+                formControlName="pricePerCourtHour"
+                min="0"
+                step="0.01"
+                class="block w-full px-4 py-2.5 bg-slate-55 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-slate-800 focus:ring-1 focus:ring-slate-800 transition-colors font-mono font-bold"
+              />
+            </div>
+            <button
+              type="submit"
+              [disabled]="locationForm.invalid || savingLocation()"
+              class="h-11 px-5 rounded-xl bg-slate-900 hover:bg-indigo-700 text-white text-xs font-bold uppercase tracking-wider inline-flex items-center justify-center gap-1.5 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              @if (savingLocation()) {
+                <span class="inline-block w-4 h-4 border-2 border-slate-500 border-t-white rounded-full animate-spin"></span>
+                Saving
+              } @else {
+                <mat-icon class="text-base">add</mat-icon>
+                Add
+              }
+            </button>
+          </form>
+
+          @if (locationList().length === 0) {
+            <div class="mt-5 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-center">
+              <mat-icon class="text-3xl text-slate-300">location_on</mat-icon>
+              <p class="mt-2 text-xs font-bold text-slate-500">No saved locations yet.</p>
+            </div>
+          } @else {
+            <div class="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
+              @for (location of locationList(); track location.id) {
+                <div class="rounded-2xl border border-slate-200 bg-slate-50/60 p-4 flex items-center justify-between gap-3">
+                  <div class="min-w-0">
+                    <p class="text-sm font-display font-black text-slate-900 truncate">{{ location.name }}</p>
+                    <p class="text-xs text-slate-500 font-mono mt-1">{{ location.pricePerCourtHour | currency:'USD' }} / court hour</p>
+                  </div>
+                  <button
+                    type="button"
+                    (click)="handleDeleteLocation(location)"
+                    [disabled]="pendingDeleteLocationId() === location.id"
+                    class="inline-flex items-center justify-center w-9 h-9 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-40"
+                    title="Delete location"
+                  >
+                    @if (pendingDeleteLocationId() === location.id) {
+                      <span class="inline-block w-4 h-4 border-2 border-slate-300 border-t-red-500 rounded-full animate-spin"></span>
+                    } @else {
+                      <mat-icon class="text-lg">delete_outline</mat-icon>
+                    }
+                  </button>
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Runtime error diagnostics -->
+        <div class="bg-white border border-slate-200 rounded-[2.5rem] shadow-sm p-6 sm:p-8" id="admin-runtime-errors">
+          <div class="border-b border-slate-100 pb-4 mb-5 flex items-start justify-between gap-4">
+            <div>
+              <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider font-sans select-none">Diagnostics</h4>
+              <p class="text-lg font-display font-black text-slate-900 mt-1">Runtime Errors</p>
+              <p class="text-xs text-slate-500 mt-1">Latest login and auth failures captured from users.</p>
+            </div>
+            <div class="min-w-10 h-10 px-3 rounded-xl bg-red-50 border border-red-100 flex items-center justify-center gap-1.5 text-red-700">
+              <mat-icon class="text-xl">bug_report</mat-icon>
+              <span class="text-xs font-mono font-black">{{ runtimeErrorList().length }}</span>
+            </div>
+          </div>
+
+          @if (runtimeErrorList().length === 0) {
+            <div class="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-7 text-center">
+              <mat-icon class="text-3xl text-slate-300">verified</mat-icon>
+              <p class="mt-2 text-xs font-bold text-slate-500">No runtime errors logged yet.</p>
+            </div>
+          } @else {
+            <div class="space-y-3 max-h-[34rem] overflow-y-auto pr-1" id="runtime-error-list">
+              @for (runtimeError of runtimeErrorList(); track runtimeError.id) {
+                <article class="rounded-2xl border border-red-100 bg-red-50/55 p-4 text-xs text-slate-800">
+                  <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                    <div class="min-w-0">
+                      <div class="flex flex-wrap items-center gap-2">
+                        <span class="inline-flex items-center gap-1 rounded-lg bg-white border border-red-100 px-2 py-1 text-[11px] font-black uppercase tracking-wider text-red-700">
+                          <mat-icon class="text-sm">error_outline</mat-icon>
+                          {{ runtimeError.area }}
+                        </span>
+                        <span class="text-[11px] font-mono text-slate-500">{{ formatRuntimeErrorDate(runtimeError) }}</span>
+                      </div>
+                      <p class="mt-3 font-display font-black text-slate-950 break-words">{{ runtimeError.stage }}</p>
+                      <p class="mt-1 text-slate-700 leading-relaxed break-words">
+                        {{ runtimeError.message.length > 260 ? (runtimeError.message | slice:0:260) + '...' : runtimeError.message }}
+                      </p>
+                    </div>
+
+                    @if (runtimeError.code) {
+                      <span class="shrink-0 rounded-lg bg-white border border-slate-200 px-2.5 py-1 text-[11px] font-mono font-bold text-slate-600">
+                        {{ runtimeError.code }}
+                      </span>
+                    }
+                  </div>
+
+                  <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3 text-[11px]">
+                    <div class="rounded-xl bg-white/80 border border-red-100 p-3 min-w-0">
+                      <p class="font-bold uppercase tracking-wider text-slate-400">Attempted Email</p>
+                      <p class="mt-1 font-mono break-all text-slate-800">{{ runtimeError.attemptedEmail || 'Unknown' }}</p>
+                    </div>
+                    <div class="rounded-xl bg-white/80 border border-red-100 p-3 min-w-0">
+                      <p class="font-bold uppercase tracking-wider text-slate-400">Signed-In User</p>
+                      <p class="mt-1 font-mono break-all text-slate-800">{{ runtimeError.userEmail || 'None' }}</p>
+                    </div>
+                    <div class="rounded-xl bg-white/80 border border-red-100 p-3 min-w-0">
+                      <p class="font-bold uppercase tracking-wider text-slate-400">Route</p>
+                      <p class="mt-1 font-mono break-all text-slate-800">{{ runtimeError.route || 'Unknown' }}</p>
+                    </div>
+                    <div class="rounded-xl bg-white/80 border border-red-100 p-3 min-w-0">
+                      <p class="font-bold uppercase tracking-wider text-slate-400">Provider</p>
+                      <p class="mt-1 font-mono break-all text-slate-800">{{ runtimeError.providerIds || 'None' }}</p>
+                    </div>
+                  </div>
+
+                  <details class="mt-3 rounded-xl bg-white/80 border border-red-100 p-3">
+                    <summary class="cursor-pointer text-[11px] font-bold uppercase tracking-wider text-slate-500">Technical Details</summary>
+                    <div class="mt-3 space-y-3">
+                      @if (runtimeError.stack) {
+                        <pre class="max-h-44 overflow-auto whitespace-pre-wrap break-words rounded-lg bg-slate-950 text-slate-100 p-3 text-[11px] leading-relaxed">{{ runtimeError.stack }}</pre>
+                      }
+                      <pre class="max-h-44 overflow-auto whitespace-pre-wrap break-words rounded-lg bg-slate-100 text-slate-700 p-3 text-[11px] leading-relaxed">{{ runtimeError.contextJson }}</pre>
+                      <p class="font-mono text-[11px] text-slate-500 break-all">{{ runtimeError.url }}</p>
+                      <p class="font-mono text-[11px] text-slate-500 break-all">{{ runtimeError.userAgent }}</p>
+                    </div>
+                  </details>
+                </article>
+              }
+            </div>
+          }
+        </div>
         
         <!-- Live Events selector catalog (Styled as a bento card block) -->
         <div class="bg-white border border-slate-200 rounded-[2.5rem] shadow-sm p-6 sm:p-8" id="admin-catalog-box">
           <div class="border-b border-slate-100 pb-4 mb-5">
-            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider font-sans select-none">Active Events Catalog (Switch Selected Event)</h4>
+            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider font-sans select-none">Events</h4>
           </div>
 
           @if (eventList().length === 0) {
             <div class="text-center py-12" id="admin-catalog-empty">
               <mat-icon class="text-slate-300 text-3xl">event_busy</mat-icon>
-              <p class="text-slate-400 text-xs font-medium font-sans mt-2">No scheduled events found. Use the editor to catalog your first event.</p>
+              <p class="text-slate-400 text-xs font-medium font-sans mt-2">No events yet. Fill out the form to publish the first one.</p>
             </div>
           } @else {
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="admin-catalog-selector-grid">
@@ -260,7 +496,7 @@
                     </p>
                   </div>
                   
-                  <div class="w-full flex items-center justify-between mt-4 pt-3 border-t border-slate-100 text-[10px] text-slate-500 font-mono">
+                  <div class="w-full flex items-center justify-between mt-4 pt-3 border-t border-slate-100 text-xs text-slate-500 font-mono">
                     <span class="font-bold text-slate-600 flex items-center gap-1">
                       <mat-icon class="text-xs">people</mat-icon>
                       {{ ev.participants.length }} / {{ ev.capacity }} slots
@@ -286,69 +522,195 @@
             <!-- Console Header -->
             <div class="flex flex-col md:flex-row md:items-center justify-between border-b border-slate-100 pb-5 mb-6 gap-4">
               <div class="space-y-1">
-                <span class="text-[9px] text-indigo-600 font-black uppercase tracking-widest font-mono">Active Console Segment</span>
+                <span class="text-xs text-indigo-600 font-black uppercase tracking-wider font-sans">Selected Event</span>
                 <h3 class="text-2xl font-display font-black tracking-tight text-slate-900">{{ activeEvent.name }}</h3>
                 <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-400 font-medium font-sans">
                   <span class="flex items-center gap-1 text-slate-500"><mat-icon class="text-sm">schedule</mat-icon> {{ formatDate(activeEvent.date) }}</span>
-                  <span>•</span>
+                  <span>/</span>
                   <span class="flex items-center gap-1 text-slate-500"><mat-icon class="text-sm">location_on</mat-icon> {{ activeEvent.location }}</span>
                 </div>
               </div>
 
-              <!-- Lockdown finalised button -->
-              <button
-                [id]="'btn-toggle-finalise-' + activeEvent.id"
-                (click)="handleToggleFinalise(activeEvent)"
-                class="inline-flex items-center justify-center gap-1.5 h-11 px-5 text-xs font-bold uppercase tracking-wider rounded-xl border transition-all cursor-pointer shadow-sm"
-                [class.bg-amber-600]="activeEvent.finalised"
-                [class.hover:bg-amber-700]="activeEvent.finalised"
-                [class.text-white]="activeEvent.finalised"
-                [class.border-amber-600]="activeEvent.finalised"
-                [class.shadow-amber-100]="activeEvent.finalised"
-                [class.bg-white]="!activeEvent.finalised"
-                [class.hover:bg-slate-50]="!activeEvent.finalised"
-                [class.text-slate-700]="!activeEvent.finalised"
-                [class.border-slate-250]="!activeEvent.finalised"
-              >
-                <mat-icon class="text-base">{{ activeEvent.finalised ? 'lock' : 'lock_open' }}</mat-icon>
-                {{ activeEvent.finalised ? 'Unlock Bookings' : 'Lock Event (Finalise)' }}
-              </button>
+              <div class="flex flex-col sm:flex-row sm:items-center gap-2">
+                <button
+                  type="button"
+                  [id]="'btn-edit-event-' + activeEvent.id"
+                  (click)="startEditEvent(activeEvent)"
+                  class="inline-flex items-center justify-center gap-1.5 h-11 px-5 text-xs font-bold uppercase tracking-wider rounded-xl border border-indigo-150 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 transition-all cursor-pointer shadow-sm"
+                >
+                  <mat-icon class="text-base">edit</mat-icon>
+                  Edit Details
+                </button>
+
+                <!-- Lockdown finalised button -->
+                <button
+                  [id]="'btn-toggle-finalise-' + activeEvent.id"
+                  (click)="handleToggleFinalise(activeEvent)"
+                  class="inline-flex items-center justify-center gap-1.5 h-11 px-5 text-xs font-bold uppercase tracking-wider rounded-xl border transition-all cursor-pointer shadow-sm"
+                  [class.bg-amber-600]="activeEvent.finalised"
+                  [class.hover:bg-amber-700]="activeEvent.finalised"
+                  [class.text-white]="activeEvent.finalised"
+                  [class.border-amber-600]="activeEvent.finalised"
+                  [class.shadow-amber-100]="activeEvent.finalised"
+                  [class.bg-white]="!activeEvent.finalised"
+                  [class.hover:bg-slate-50]="!activeEvent.finalised"
+                  [class.text-slate-700]="!activeEvent.finalised"
+                  [class.border-slate-250]="!activeEvent.finalised"
+                  [disabled]="pendingFinaliseEventId() === activeEvent.id"
+                >
+                  @if (pendingFinaliseEventId() === activeEvent.id) {
+                    <span class="inline-block w-4 h-4 border-2 border-slate-300 border-t-slate-700 rounded-full animate-spin"></span>
+                    Updating...
+                  } @else {
+                    <mat-icon class="text-base">{{ activeEvent.finalised ? 'lock' : 'lock_open' }}</mat-icon>
+                    {{ activeEvent.finalised ? 'Unlock Bookings' : 'Close Bookings' }}
+                  }
+                </button>
+              </div>
             </div>
 
             <!-- Calculated Financial Cost Splits summaries (Bento stats cells) -->
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-slate-50 border border-slate-150 p-5 rounded-2xl mb-8 text-sm" id="admin-finance-split-matrix">
               <!-- Cell 1 -->
               <div class="space-y-1" id="split-mat-1">
-                <p class="text-[9px] text-slate-400 font-bold uppercase tracking-wider font-sans">Total Event cost</p>
+                <p class="text-xs text-slate-400 font-bold uppercase tracking-wider font-sans">Total Cost</p>
                 <p class="text-2xl font-mono font-black text-slate-850 text-slate-900">{{ activeEvent.cost | currency:'USD' }}</p>
               </div>
               <!-- Cell 2 -->
               <div class="space-y-1" id="split-mat-2">
-                <p class="text-[9px] text-slate-400 font-bold uppercase tracking-wider font-sans">Members registered</p>
+                <p class="text-xs text-slate-400 font-bold uppercase tracking-wider font-sans">Registered</p>
                 <p class="text-2xl font-mono font-black text-slate-850 text-slate-900">{{ activeEvent.participants.length }} joined</p>
               </div>
               <!-- Cell 3 -->
               <div class="space-y-1" id="split-mat-3">
-                <p class="text-[9px] text-slate-400 font-bold uppercase tracking-wider font-sans">Calculated Split cost</p>
+                <p class="text-xs text-slate-400 font-bold uppercase tracking-wider font-sans">Cost Each</p>
                 <p class="text-2xl font-mono font-black border-l-2 border-indigo-600 pl-3 leading-none text-indigo-650 text-indigo-600">
-                  {{ activeEvent.costPerParticipant | currency:'USD' }} <span class="text-[10px] text-slate-400 font-sans font-normal lowercase select-none">each</span>
+                  {{ activeEvent.costPerParticipant | currency:'USD' }} <span class="text-xs text-slate-400 font-sans font-normal lowercase select-none">each</span>
                 </p>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-[240px_1fr] gap-4 bg-white border border-slate-200 rounded-2xl p-5 mb-8 shadow-sm" id="admin-random-team-draw">
+              <div class="flex flex-col items-center justify-center gap-4 text-center border-b lg:border-b-0 lg:border-r border-slate-100 pb-5 lg:pb-0 lg:pr-5">
+                <div
+                  class="relative flex items-center justify-center w-28 h-28 rounded-full border-[10px] border-slate-100 border-t-indigo-600 border-r-emerald-500 shadow-inner"
+                  [class.animate-spin]="spinningTeamsForEventId() === activeEvent.id"
+                >
+                  <div class="absolute inset-5 rounded-full bg-white border border-slate-200"></div>
+                  <mat-icon class="relative text-3xl text-slate-900">casino</mat-icon>
+                </div>
+                <div class="space-y-1">
+                  <h4 class="text-sm font-display font-black text-slate-900">Random Teams</h4>
+                  <p class="text-xs text-slate-500 leading-relaxed">Spin to pair booked players into teams of two.</p>
+                </div>
+                <button
+                  type="button"
+                  [id]="'btn-spin-teams-' + activeEvent.id"
+                  (click)="handleSpinTeams(activeEvent)"
+                  [disabled]="activeEvent.participants.length < 2 || spinningTeamsForEventId() === activeEvent.id"
+                  class="inline-flex items-center justify-center gap-1.5 h-11 px-5 rounded-xl bg-slate-900 hover:bg-indigo-700 text-white text-xs font-bold uppercase tracking-wider transition-colors disabled:opacity-40 disabled:cursor-not-allowed shadow-sm"
+                >
+                  @if (spinningTeamsForEventId() === activeEvent.id) {
+                    <span class="inline-block w-4 h-4 border-2 border-slate-500 border-t-white rounded-full animate-spin"></span>
+                    Spinning...
+                  } @else {
+                    <mat-icon class="text-base">shuffle</mat-icon>
+                    Spin Teams
+                  }
+                </button>
+              </div>
+
+              <div class="min-w-0">
+                @if (activeEvent.participants.length < 2) {
+                  <div class="h-full min-h-44 flex flex-col items-center justify-center text-center border-2 border-dashed border-slate-200 rounded-2xl p-6">
+                    <mat-icon class="text-3xl text-slate-300">group_add</mat-icon>
+                    <p class="mt-2 text-sm font-bold text-slate-700">Need at least 2 booked players.</p>
+                    <p class="text-xs text-slate-400 mt-1">The draw will unlock once more players book this event.</p>
+                  </div>
+                } @else {
+                  @if (teamDraw(); as draw) {
+                    @if (draw.eventId === activeEvent.id) {
+                      <div class="space-y-5">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                          <div>
+                            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider font-sans">Match Draw</h4>
+                            <p class="text-xs text-slate-500 mt-1">{{ draw.teams.length }} teams created from {{ activeEvent.participants.length }} bookings.</p>
+                          </div>
+                          <button
+                            type="button"
+                            (click)="clearTeamDraw()"
+                            class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-slate-200 text-slate-400 hover:text-slate-900 hover:bg-slate-50 transition-colors"
+                            title="Clear team draw"
+                          >
+                            <mat-icon class="text-lg">close</mat-icon>
+                          </button>
+                        </div>
+
+                        <div class="grid grid-cols-1 xl:grid-cols-2 gap-3">
+                          @for (match of draw.matches; track match.id) {
+                            <div class="border border-slate-200 rounded-2xl p-4 bg-slate-50/70">
+                              <p class="text-xs font-black text-indigo-600 uppercase tracking-wider mb-3">{{ match.label }}</p>
+                              <div class="grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr] gap-3 sm:items-stretch">
+                                <div class="bg-white border border-slate-200 rounded-xl p-3">
+                                  <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">{{ match.teamA.name }}</p>
+                                  <p class="mt-1 text-sm font-display font-black text-slate-900">{{ match.teamA.players[0].userName }}</p>
+                                  <p class="text-sm font-display font-black text-slate-900">{{ match.teamA.players[1].userName }}</p>
+                                </div>
+                                <div class="flex items-center justify-center text-xs font-black text-slate-400 uppercase tracking-wider">vs</div>
+                                @if (match.teamB) {
+                                  <div class="bg-white border border-slate-200 rounded-xl p-3">
+                                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">{{ match.teamB.name }}</p>
+                                    <p class="mt-1 text-sm font-display font-black text-slate-900">{{ match.teamB.players[0].userName }}</p>
+                                    <p class="text-sm font-display font-black text-slate-900">{{ match.teamB.players[1].userName }}</p>
+                                  </div>
+                                } @else {
+                                  <div class="bg-white border border-dashed border-slate-200 rounded-xl p-3 flex items-center text-sm font-bold text-slate-400">
+                                    Waiting for another team
+                                  </div>
+                                }
+                              </div>
+                            </div>
+                          }
+                        </div>
+
+                        @if (draw.standby) {
+                          <div class="flex items-center gap-2 rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 text-xs text-amber-900">
+                            <mat-icon class="text-base text-amber-700">person_alert</mat-icon>
+                            <span><strong>{{ draw.standby.userName }}</strong> is on standby because the player count is odd.</span>
+                          </div>
+                        }
+                      </div>
+                    } @else {
+                      <div class="h-full min-h-44 flex flex-col items-center justify-center text-center border-2 border-dashed border-slate-200 rounded-2xl p-6">
+                        <mat-icon class="text-3xl text-slate-300">casino</mat-icon>
+                        <p class="mt-2 text-sm font-bold text-slate-700">Spin when this event is ready.</p>
+                        <p class="text-xs text-slate-400 mt-1">The teammate draw is random and can be reshuffled anytime.</p>
+                      </div>
+                    }
+                  } @else {
+                    <div class="h-full min-h-44 flex flex-col items-center justify-center text-center border-2 border-dashed border-slate-200 rounded-2xl p-6">
+                      <mat-icon class="text-3xl text-slate-300">casino</mat-icon>
+                      <p class="mt-2 text-sm font-bold text-slate-700">Spin when this event is ready.</p>
+                      <p class="text-xs text-slate-400 mt-1">The teammate draw is random and can be reshuffled anytime.</p>
+                    </div>
+                  }
+                }
               </div>
             </div>
 
             <!-- Participants list database -->
             <div class="space-y-3" id="admin-participants-table-box">
-              <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider font-sans select-none">Registrations Member List</h4>
+              <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider font-sans select-none">Bookings</h4>
               
               @if (activeEvent.participants.length === 0) {
                 <div class="py-14 text-center border-2 border-dashed border-slate-200 rounded-3xl" id="no-participants-banner">
                   <mat-icon class="text-slate-300 text-3xl">people_outline</mat-icon>
-                  <p class="text-slate-450 text-xs font-medium mt-2 font-sans">Zero participants currently registered for this event slot.</p>
+                  <p class="text-slate-450 text-xs font-medium mt-2 font-sans">No bookings yet.</p>
                 </div>
               } @else {
                 <div class="overflow-x-auto border border-slate-200 rounded-2xl shadow-sm" id="participant-list-container">
                   <table class="min-w-full divide-y divide-slate-150 text-left text-xs text-slate-800" id="participant-list-table">
-                    <thead class="bg-slate-50 text-slate-500 font-medium uppercase text-[10px] tracking-wider" id="table-head">
+                    <thead class="bg-slate-50 text-slate-500 font-medium uppercase text-xs tracking-wider" id="table-head">
                       <tr>
                         <th class="px-5 py-4 font-bold">Attendee Name</th>
                         <th class="px-5 py-4 font-bold">Email</th>
@@ -373,7 +735,8 @@
                               type="button"
                               [id]="'btn-toggle-paid-' + p.userId"
                               (click)="handleTogglePayment(p)"
-                              class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold border rounded-lg transition-colors cursor-pointer select-none uppercase tracking-wider text-[10px]"
+                              [disabled]="pendingPaymentBookingId() === p.id"
+                              class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold border rounded-lg transition-colors cursor-pointer select-none uppercase tracking-wider"
                               [class.bg-emerald-50]="p.paid"
                               [class.border-emerald-250]="p.paid"
                               [class.text-emerald-800]="p.paid"
@@ -381,8 +744,13 @@
                               [class.border-amber-205]="!p.paid"
                               [class.text-amber-800]="!p.paid"
                             >
-                              <mat-icon class="text-sm leading-none">{{ p.paid ? 'check_circle' : 'pending' }}</mat-icon>
-                              {{ p.paid ? 'Paid' : 'Unpaid' }}
+                              @if (pendingPaymentBookingId() === p.id) {
+                                <span class="inline-block w-3.5 h-3.5 border-2 border-slate-300 border-t-slate-700 rounded-full animate-spin"></span>
+                                Updating
+                              } @else {
+                                <mat-icon class="text-sm leading-none">{{ p.paid ? 'check_circle' : 'pending' }}</mat-icon>
+                                {{ p.paid ? 'Paid' : 'Unpaid' }}
+                              }
                             </button>
                           </td>
                           <!-- Actions (Remove) -->
@@ -391,10 +759,15 @@
                               type="button"
                               [id]="'btn-remove-participant-' + p.userId"
                               (click)="handleRemoveParticipant(activeEvent.id, p.userId, p.userName)"
+                              [disabled]="pendingRemoveBookingId() === p.id"
                               class="inline-flex items-center justify-center w-8 h-8 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-650 transition-colors cursor-pointer"
                               title="Remove Participant Booking"
                             >
-                              <mat-icon class="text-lg">delete_outline</mat-icon>
+                              @if (pendingRemoveBookingId() === p.id) {
+                                <span class="inline-block w-4 h-4 border-2 border-slate-200 border-t-red-500 rounded-full animate-spin"></span>
+                              } @else {
+                                <mat-icon class="text-lg">delete_outline</mat-icon>
+                              }
                             </button>
                           </td>
                         </tr>

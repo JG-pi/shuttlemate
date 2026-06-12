@@ -1,9 +1,10 @@
 export const firebaseConfig = {
-  apiKey: "AIzaSyDxRkwEVmu-LAyPTtw_iQ0SstjcSK9zFDU",
-  authDomain: "badminton-fee-calculator.firebaseapp.com",
-  projectId: "badminton-fee-calculator",
-  storageBucket: "badminton-fee-calculator.firebasestorage.app",
-  messagingSenderId: "795404284443",
-  appId: "1:795404284443:web:0f91282d9f48142bda3ebe",
-  measurementId: "G-QZV1TC3H2Z"
+  apiKey: "AIzaSyDuzJPfR5juZ_oUVOnk6Veyqs6U5sMyqbs",
+  authDomain: "shuttlemate-b7ec4.firebaseapp.com",
+  projectId: "shuttlemate-b7ec4",
+  storageBucket: "shuttlemate-b7ec4.firebasestorage.app",
+  messagingSenderId: "164745160645",
+  appId: "1:164745160645:web:486c848bd09c8b1bf38dac",
+  measurementId: "G-24SY0Z2CNN",
+  firestoreDatabaseId: "(default)"
 }; 

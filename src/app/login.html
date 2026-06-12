@@ -18,7 +18,7 @@
     <!-- Full Name field (Register mode only) -->
     @if (isRegisterMode()) {
       <div class="space-y-1.5" id="field-name-container">
-        <label for="name" class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Full Name</label>
+        <label for="name" class="block text-xs font-bold text-slate-400 uppercase tracking-wider font-sans">Full Name</label>
         <div class="relative">
           <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
             <mat-icon class="text-lg">person</mat-icon>
@@ -39,7 +39,7 @@
 
     <!-- Email Field -->
     <div class="space-y-1.5" id="field-email-container">
-      <label for="email" class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Email Address</label>
+      <label for="email" class="block text-xs font-bold text-slate-400 uppercase tracking-wider font-sans">Email Address</label>
       <div class="relative">
         <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
           <mat-icon class="text-lg">mail</mat-icon>
@@ -59,7 +59,7 @@
 
     <!-- Password Field -->
     <div class="space-y-1.5" id="field-password-container">
-      <label for="password" class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Password</label>
+      <label for="password" class="block text-xs font-bold text-slate-400 uppercase tracking-wider font-sans">Password</label>
       <div class="relative">
         <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
           <mat-icon class="text-lg">lock</mat-icon>
@@ -68,7 +68,7 @@
           id="password"
           type="password"
           formControlName="password"
-          placeholder="••••••••"
+          placeholder="Password"
           class="block w-full pl-11 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 transition-colors font-sans"
         />
       </div>
@@ -97,10 +97,32 @@
         Authenticating...
       } @else {
         <mat-icon class="text-base">login</mat-icon>
-        {{ isRegisterMode() ? 'Sign Up' : 'Sign In' }}
+        {{ isRegisterMode() ? 'Create Account' : 'Sign In' }}
       }
     </button>
   </form>
+
+  <div class="my-6 flex items-center gap-3" aria-hidden="true">
+    <div class="h-px flex-1 bg-slate-100"></div>
+    <span class="text-xs font-bold uppercase tracking-wider text-slate-400">or</span>
+    <div class="h-px flex-1 bg-slate-100"></div>
+  </div>
+
+  <button
+    id="btn-google-auth"
+    type="button"
+    (click)="onGoogleContinue()"
+    [disabled]="loading()"
+    class="w-full h-12 flex items-center justify-center gap-3 bg-white hover:bg-slate-50 text-slate-800 font-display font-medium rounded-xl text-xs uppercase tracking-wider transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed border border-slate-200 shadow-sm"
+  >
+    @if (loading()) {
+      <span class="inline-block w-4 h-4 border-2 border-slate-300 border-t-slate-800 rounded-full animate-spin"></span>
+      Connecting...
+    } @else {
+      <span class="inline-flex h-5 w-5 items-center justify-center rounded-full border border-slate-200 bg-white font-sans text-sm font-bold normal-case tracking-normal text-blue-600">G</span>
+      Continue with Google
+    }
+  </button>
 
   <!-- Toggle Modes -->
   <div class="text-center mt-8 pt-6 border-t border-slate-100" id="login-auth-toggle-box">
@@ -115,25 +137,5 @@
         {{ isRegisterMode() ? 'Sign In' : 'Sign Up' }}
       </button>
     </p>
-  </div>
-
-  <!-- Admins Demo Notice Box (Bento themed mini info cell) -->
-  <div class="mt-8 p-5 bg-slate-50 border border-slate-200 rounded-2xl text-[11px] space-y-2.5 text-slate-700 animate-fade-in" id="admin-info-notice">
-    <div class="flex items-center gap-1.5 font-bold text-slate-900 font-display text-xs uppercase tracking-wider select-none">
-      <mat-icon class="text-slate-600 text-base leading-none">info</mat-icon>
-      Admin Credentials Notice
-    </div>
-    <div class="space-y-1.5 leading-relaxed text-slate-500 font-sans">
-      <p>
-        Register or Sign In with either administrator email to enable full admin capabilities:
-      </p>
-      <ul class="list-disc pl-4 space-y-1 font-mono text-[10px] text-slate-600 font-bold">
-        <li>jamesguoas&#64;gmail.com</li>
-        <li>khoiphan21&#64;gmail.com</li>
-      </ul>
-      <p class="text-[10px] italic leading-tight scale-95 origin-left">
-        *Use any password of your choice (minimum 6 characters).
-      </p>
-    </div>
   </div>
 </div>

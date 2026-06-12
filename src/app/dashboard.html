@@ -47,7 +47,7 @@
   <!-- Banner / Message Header -->
   <div class="mb-10" id="dashboard-welcome-banner">
     <h2 class="text-4xl font-display font-black tracking-tight text-slate-900 sm:text-5xl">
-      Available Scheduling Events
+      Upcoming Events
     </h2>
     <p class="text-slate-500 text-sm md:text-base mt-2.5 max-w-3xl leading-relaxed">
       Browse upcoming group meetups, sign up to secure your spot, and view your split-cost calculations in real-time.
@@ -69,7 +69,7 @@
   @if (loading()) {
     <div class="flex flex-col items-center justify-center py-24" id="dashboard-loading-box">
       <span class="inline-block w-10 h-10 border-4 border-slate-200 border-t-indigo-600 rounded-full animate-spin"></span>
-      <p class="text-sm text-slate-400 mt-5 font-mono">Synchronizing scheduled events...</p>
+      <p class="text-sm text-slate-400 mt-5 font-sans">Loading events...</p>
     </div>
   } @else {
     
@@ -165,7 +165,7 @@
                   <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
                     <span class="text-xs text-slate-400 font-semibold uppercase tracking-wider flex items-center gap-1.5 font-sans">
                       <mat-icon class="text-sm">people_outline</mat-icon>
-                      Registration Fill Capacity
+                      Registered players
                     </span>
                     <span class="text-xs font-bold text-slate-700 font-mono">
                       {{ event.participantCount }} / {{ event.capacity }} participants
@@ -190,20 +190,20 @@
               <!-- 2. Cost Analysis Card (span-4) - Styled dynamically in beautiful rich indigo -->
               <div class="md:col-span-4 bg-indigo-600 rounded-[2rem] p-6 sm:p-8 text-white shadow-xl shadow-indigo-100/50 flex flex-col justify-between">
                 <div>
-                  <div class="flex items-center justify-between font-bold uppercase tracking-widest text-[9px] text-indigo-200 font-mono">
-                    <span>Split Cost Analysis</span>
+                  <div class="flex items-center justify-between font-bold uppercase tracking-wider text-xs text-indigo-200 font-sans">
+                    <span>Cost Split</span>
                     @if (event.finalised) {
-                      <span class="bg-indigo-700 px-1.5 py-0.5 rounded text-white flex items-center gap-0.5"><mat-icon class="text-[10px] leading-none">lock</mat-icon> Locked</span>
+                      <span class="bg-indigo-700 px-1.5 py-0.5 rounded text-white flex items-center gap-0.5"><mat-icon class="text-xs leading-none">lock</mat-icon> Locked</span>
                     } @else {
                       <span class="bg-indigo-500/50 px-1.5 py-0.5 rounded text-indigo-100">Dynamic</span>
                     }
                   </div>
 
-                  <p class="text-[11px] text-indigo-100 mt-5 font-semibold uppercase tracking-wider font-sans">Your Split Share Cost</p>
+                  <p class="text-xs text-indigo-100 mt-5 font-semibold uppercase tracking-wider font-sans">Estimated share</p>
                   <p class="text-4xl sm:text-5xl font-mono font-black tracking-tight mt-1">
                     {{ event.costPerParticipant | currency:'USD' }}
                   </p>
-                  <span class="text-[10px] text-indigo-200 italic font-medium font-sans">Divided equally among bookings</span>
+                  <span class="text-xs text-indigo-200 italic font-medium font-sans">Divided equally among bookings</span>
                 </div>
 
                 <div class="mt-8 pt-6 border-t border-indigo-500/50 space-y-2.5 text-xs text-indigo-100">
@@ -217,9 +217,9 @@
                   </div>
 
                   @if (event.participantCount === 0) {
-                    <div class="bg-indigo-700/60 p-3 rounded-xl border border-indigo-500 text-[11px] text-indigo-100 leading-relaxed mt-2 flex items-start gap-1.5">
+                    <div class="bg-indigo-700/60 p-3 rounded-xl border border-indigo-500 text-xs text-indigo-100 leading-relaxed mt-2 flex items-start gap-1.5">
                       <mat-icon class="text-xs text-indigo-300 mt-0.5">help_outline</mat-icon>
-                      <span>No sign-ups yet. Be the first to join and launch split pricing!</span>
+                      <span>No bookings yet. Be the first to join.</span>
                     </div>
                   }
                 </div>
@@ -229,7 +229,7 @@
               @if (event.additionalInfo) {
                 <div class="md:col-span-8 bg-slate-100 border border-slate-200/60 rounded-[2rem] p-6 sm:p-8 shadow-sm flex flex-col justify-between">
                   <div>
-                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 font-sans select-none">Event Curriculum & Syllabus</h4>
+                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 font-sans select-none">Event Notes</h4>
                     <div 
                       class="prose prose-sm prose-slate max-w-none text-slate-650 text-sm leading-relaxed prose-headings:font-display prose-headings:font-bold prose-headings:text-slate-900 prose-ul:list-disc prose-ul:pl-5 prose-p:my-1.5"
                       [innerHTML]="event.additionalInfo | markdown"
@@ -242,7 +242,7 @@
                 <div class="md:col-span-8 bg-slate-100/50 border border-dashed border-slate-200 rounded-[2rem] p-8 flex items-center justify-center text-slate-400">
                   <div class="text-center font-sans space-y-1">
                     <mat-icon class="text-xl">notes</mat-icon>
-                    <p class="text-xs text-slate-450 font-medium font-sans">No additional syllabus specified for this event.</p>
+                    <p class="text-xs text-slate-450 font-medium font-sans">No additional notes for this event.</p>
                   </div>
                 </div>
               }
@@ -250,18 +250,18 @@
               <!-- 4. Registration Status & Signup Buttons (span-4) - Styled in Slate dark bento box -->
               <div class="md:col-span-4 bg-slate-900 text-white rounded-[2rem] p-6 sm:p-8 flex flex-col justify-between gap-6 shadow-xl shadow-slate-200/40">
                 <div>
-                  <span class="text-[9px] text-slate-400 font-bold uppercase tracking-widest font-mono">Registration Status</span>
+                  <span class="text-xs text-slate-400 font-bold uppercase tracking-wider font-sans">Your Booking</span>
                   
                   <div class="mt-4">
                     @if (event.isCurrentUserSignedUp) {
                       <div class="flex items-start gap-2.5 bg-slate-800 p-4 rounded-2xl border border-slate-700">
                         <mat-icon class="text-emerald-400 text-xl leading-none flex-shrink-0">check_circle</mat-icon>
                         <div class="space-y-0.5">
-                          <p class="text-xs font-bold text-emerald-400 leading-tight">Spot is Confirmed</p>
+                          <p class="text-xs font-bold text-emerald-400 leading-tight">Booking confirmed</p>
                           @if (event.currentUserBooking?.paid) {
-                            <p class="text-[10px] text-slate-350 select-none">Payment logged as Paid.</p>
+                            <p class="text-xs text-slate-350 select-none">Payment marked as paid.</p>
                           } @else {
-                            <p class="text-[10px] text-amber-300 font-sans flex items-center gap-0.5 select-none font-medium">
+                            <p class="text-xs text-amber-300 font-sans flex items-center gap-0.5 select-none font-medium">
                               <mat-icon class="text-[12px] leading-none">payment</mat-icon> Awaiting pay verification
                             </p>
                           }
@@ -278,24 +278,120 @@
                     <!-- Cancel Button -->
                     <button
                       [id]="'btn-cancel-' + event.id"
-                      [disabled]="event.finalised"
+                      [disabled]="event.finalised || pendingEventId() === event.id"
                       (click)="handleCancelSignup(event)"
                       class="w-full h-11 bg-transparent hover:bg-red-500/10 border border-slate-700 hover:border-red-500/30 text-slate-300 hover:text-red-400 text-xs font-bold uppercase tracking-wider rounded-xl inline-flex items-center justify-center gap-1.5 transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                     >
-                      <mat-icon class="text-base">cancel</mat-icon>
-                      Cancel Slot
+                      @if (pendingEventId() === event.id && pendingAction() === 'cancel') {
+                        <span class="inline-block w-4 h-4 border-2 border-slate-500 border-t-red-400 rounded-full animate-spin"></span>
+                        Canceling...
+                      } @else {
+                        <mat-icon class="text-base">cancel</mat-icon>
+                        Cancel Booking
+                      }
                     </button>
                   } @else {
                     <!-- Join Button -->
                     <button
                       [id]="'btn-join-' + event.id"
-                      [disabled]="event.finalised || event.isFull"
+                      [disabled]="event.finalised || event.isFull || pendingEventId() === event.id"
                       (click)="handleJoinEvent(event)"
                       class="w-full h-12 bg-white hover:bg-slate-100 text-slate-900 hover:text-indigo-900 font-display font-black text-xs uppercase tracking-wider rounded-xl inline-flex items-center justify-center gap-1.5 transition-all cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed shadow-md shadow-black/10"
                     >
-                      <mat-icon class="text-base leading-none">add_task</mat-icon>
-                      {{ event.finalised ? 'Bookings Closed' : (event.isFull ? 'Event Full' : 'Sign Up to Event') }}
+                      @if (pendingEventId() === event.id && pendingAction() === 'join') {
+                        <span class="inline-block w-4 h-4 border-2 border-slate-300 border-t-indigo-600 rounded-full animate-spin"></span>
+                        Joining...
+                      } @else {
+                        <mat-icon class="text-base leading-none">add_task</mat-icon>
+                        {{ event.finalised ? 'Bookings Closed' : (event.isFull ? 'Event Full' : 'Join Event') }}
+                      }
                     </button>
+                  }
+                </div>
+              </div>
+
+              <div class="md:col-span-12 bg-white border border-slate-200 rounded-[2rem] p-6 sm:p-7 shadow-sm" [id]="'event-team-draw-' + event.id">
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+                  <div class="flex items-center gap-4">
+                    <div
+                      class="relative flex items-center justify-center w-16 h-16 rounded-full border-[7px] border-slate-100 border-t-indigo-600 border-r-emerald-500 shadow-inner flex-shrink-0"
+                      [class.animate-spin]="spinningTeamsForEventId() === event.id"
+                    >
+                      <div class="absolute inset-3 rounded-full bg-white border border-slate-200"></div>
+                      <mat-icon class="relative text-xl text-slate-900">casino</mat-icon>
+                    </div>
+                    <div>
+                      <h4 class="text-sm font-display font-black text-slate-900">Random Team Draw</h4>
+                      <p class="text-xs text-slate-500 mt-1 leading-relaxed">Create random teams of two from the booked players for this event.</p>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    [id]="'btn-event-spin-teams-' + event.id"
+                    (click)="handleSpinTeams(event)"
+                    [disabled]="event.participants.length < 2 || spinningTeamsForEventId() === event.id"
+                    class="inline-flex items-center justify-center gap-1.5 h-11 px-5 rounded-xl bg-slate-900 hover:bg-indigo-700 text-white text-xs font-bold uppercase tracking-wider transition-colors disabled:opacity-40 disabled:cursor-not-allowed shadow-sm"
+                  >
+                    @if (spinningTeamsForEventId() === event.id) {
+                      <span class="inline-block w-4 h-4 border-2 border-slate-500 border-t-white rounded-full animate-spin"></span>
+                      Spinning...
+                    } @else {
+                      <mat-icon class="text-base">shuffle</mat-icon>
+                      Spin Teams
+                    }
+                  </button>
+                </div>
+
+                <div class="mt-5">
+                  @if (event.participants.length < 2) {
+                    <div class="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-5 text-center">
+                      <mat-icon class="text-2xl text-slate-300">group_add</mat-icon>
+                      <p class="mt-1 text-xs font-bold text-slate-500">Need at least 2 booked players to create teams.</p>
+                    </div>
+                  } @else {
+                    @if (teamDraws()[event.id]; as draw) {
+                      <div class="space-y-4">
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                          @for (match of draw.matches; track match.id) {
+                            <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                              <p class="text-xs font-black text-indigo-600 uppercase tracking-wider mb-3">{{ match.label }}</p>
+                              <div class="grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr] gap-3 sm:items-stretch">
+                                <div class="rounded-xl border border-slate-200 bg-white p-3">
+                                  <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">{{ match.teamA.name }}</p>
+                                  <p class="mt-1 text-sm font-display font-black text-slate-900">{{ match.teamA.players[0].userName }}</p>
+                                  <p class="text-sm font-display font-black text-slate-900">{{ match.teamA.players[1].userName }}</p>
+                                </div>
+                                <div class="flex items-center justify-center text-xs font-black text-slate-400 uppercase tracking-wider">vs</div>
+                                @if (match.teamB) {
+                                  <div class="rounded-xl border border-slate-200 bg-white p-3">
+                                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">{{ match.teamB.name }}</p>
+                                    <p class="mt-1 text-sm font-display font-black text-slate-900">{{ match.teamB.players[0].userName }}</p>
+                                    <p class="text-sm font-display font-black text-slate-900">{{ match.teamB.players[1].userName }}</p>
+                                  </div>
+                                } @else {
+                                  <div class="rounded-xl border border-dashed border-slate-200 bg-white p-3 flex items-center text-sm font-bold text-slate-400">
+                                    Waiting for another team
+                                  </div>
+                                }
+                              </div>
+                            </div>
+                          }
+                        </div>
+
+                        @if (draw.standby) {
+                          <div class="flex items-center gap-2 rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 text-xs text-amber-900">
+                            <mat-icon class="text-base text-amber-700">person_alert</mat-icon>
+                            <span><strong>{{ draw.standby.userName }}</strong> is on standby because the player count is odd.</span>
+                          </div>
+                        }
+                      </div>
+                    } @else {
+                      <div class="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-5 text-center">
+                        <mat-icon class="text-2xl text-slate-300">casino</mat-icon>
+                        <p class="mt-1 text-xs font-bold text-slate-500">Spin to generate purely random teammate pairings.</p>
+                      </div>
+                    }
                   }
                 </div>
               </div>

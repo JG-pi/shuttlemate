@@ -62,6 +62,176 @@ service cloud.firestore {
              data.updatedAt is timestamp;
     }
 
+    function isNullableString(value, maxLength) {
+      return value == null || (value is string && value.size() <= maxLength);
+    }
+
+    function isValidUserProfile(data) {
+      return data.keys().hasOnly([
+               'uid',
+               'email',
+               'displayName',
+               'photoURL',
+               'providerId',
+               'emailVerified',
+               'createdAt',
+               'updatedAt',
+               'lastLoginAt'
+             ]) &&
+             data.uid == request.auth.uid &&
+             data.email is string &&
+             data.email == request.auth.token.email &&
+             data.displayName is string &&
+             data.displayName.size() > 0 &&
+             data.displayName.size() <= 128 &&
+             isNullableString(data.photoURL, 2048) &&
+             data.providerId is string &&
+             data.providerId.size() > 0 &&
+             data.providerId.size() <= 64 &&
+             data.emailVerified is bool &&
+             data.createdAt is timestamp &&
+             data.updatedAt is timestamp &&
+             data.lastLoginAt is timestamp;
+    }
+
+    function isValidLocation(data) {
+      return data.keys().hasOnly([
+               'id',
+               'name',
+               'pricePerCourtHour',
+               'createdAt',
+               'updatedAt',
+               'createdBy'
+             ]) &&
+             data.id is string &&
+             isValidId(data.id) &&
+             data.name is string &&
+             data.name.size() > 0 &&
+             data.name.size() <= 128 &&
+             (data.pricePerCourtHour is int || data.pricePerCourtHour is float) &&
+             data.pricePerCourtHour >= 0 &&
+             data.createdAt is timestamp &&
+             data.updatedAt is timestamp &&
+             data.createdBy is string;
+    }
+
+    function isNullableText(value, maxLength) {
+      return value == null || (value is string && value.size() <= maxLength);
+    }
+
+    function isValidRuntimeError(data) {
+      return data.keys().hasOnly([
+               'id',
+               'area',
+               'stage',
+               'message',
+               'code',
+               'name',
+               'stack',
+               'attemptedEmail',
+               'userId',
+               'userEmail',
+               'emailVerified',
+               'providerIds',
+               'route',
+               'url',
+               'userAgent',
+               'online',
+               'projectId',
+               'authDomain',
+               'databaseId',
+               'contextJson',
+               'createdAt'
+             ]) &&
+             data.id is string &&
+             isValidId(data.id) &&
+             data.area is string &&
+             data.area.size() > 0 &&
+             data.area.size() <= 64 &&
+             data.stage is string &&
+             data.stage.size() > 0 &&
+             data.stage.size() <= 128 &&
+             data.message is string &&
+             data.message.size() > 0 &&
+             data.message.size() <= 2000 &&
+             isNullableText(data.code, 128) &&
+             isNullableText(data.name, 128) &&
+             isNullableText(data.stack, 6000) &&
+             isNullableText(data.attemptedEmail, 256) &&
+             isNullableText(data.userId, 128) &&
+             isNullableText(data.userEmail, 256) &&
+             (data.emailVerified == null || data.emailVerified is bool) &&
+             data.providerIds is string &&
+             data.providerIds.size() <= 256 &&
+             isNullableText(data.route, 512) &&
+             isNullableText(data.url, 2048) &&
+             isNullableText(data.userAgent, 1024) &&
+             (data.online == null || data.online is bool) &&
+             data.projectId is string &&
+             data.projectId.size() <= 128 &&
+             data.authDomain is string &&
+             data.authDomain.size() <= 256 &&
+             data.databaseId is string &&
+             data.databaseId.size() <= 128 &&
+             data.contextJson is string &&
+             data.contextJson.size() <= 8000 &&
+             data.createdAt is timestamp;
+    }
+
+    // MATCH MODULE: USERS
+    match /users/{userId} {
+      allow read: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+
+      allow create: if isSignedIn() &&
+                    request.auth.uid == userId &&
+                    isValidUserProfile(incoming()) &&
+                    incoming().createdAt == request.time &&
+                    incoming().updatedAt == request.time &&
+                    incoming().lastLoginAt == request.time;
+
+      allow update: if isSignedIn() &&
+                    request.auth.uid == userId &&
+                    isValidUserProfile(incoming()) &&
+                    incoming().uid == existing().uid &&
+                    incoming().createdAt == existing().createdAt &&
+                    incoming().updatedAt == request.time &&
+                    incoming().lastLoginAt == request.time;
+    }
+
+    // MATCH MODULE: RUNTIME ERROR LOGS
+    match /RuntimeError/{errorId} {
+      allow create: if isValidId(errorId) &&
+                    isValidRuntimeError(incoming()) &&
+                    incoming().id == errorId &&
+                    incoming().createdAt == request.time;
+
+      allow read, get, list, delete: if isAdmin();
+      allow update: if false;
+    }
+
+    // MATCH MODULE: ADMIN LOCATION SETTINGS
+    match /locations/{locationId} {
+      allow read, get, list: if isAdmin();
+
+      allow create: if isAdmin() &&
+                    isValidId(locationId) &&
+                    isValidLocation(incoming()) &&
+                    incoming().id == locationId &&
+                    incoming().createdAt == request.time &&
+                    incoming().updatedAt == request.time &&
+                    incoming().createdBy == request.auth.uid;
+
+      allow update: if isAdmin() &&
+                    isValidId(locationId) &&
+                    isValidLocation(incoming()) &&
+                    incoming().id == existing().id &&
+                    incoming().createdAt == existing().createdAt &&
+                    incoming().createdBy == existing().createdBy &&
+                    incoming().updatedAt == request.time;
+
+      allow delete: if isAdmin() && isValidId(locationId);
+    }
+
     // MATCH MODULE: EVENTS
     match /events/{eventId} {
       allow read, get, list: if isSignedIn();
@@ -89,11 +259,10 @@ service cloud.firestore {
 
     // MATCH MODULE: BOOKINGS
     match /bookings/{bookingId} {
-      // Direct reads and list queries must be secured on server
-      allow read, get: if isSignedIn() && (isAdmin() || existing().userId == request.auth.uid);
-      allow list: if isSignedIn() && (isAdmin() || resource.data.userId == request.auth.uid);
+      // The event catalog reads bookings to calculate participant counts and split costs.
+      allow read, get, list: if isSignedIn();
 
-      allow create: if isEmailVerified() && isValidId(bookingId) && isValidBooking(incoming()) &&
+      allow create: if isSignedIn() && isValidId(bookingId) && isValidBooking(incoming()) &&
                     incoming().createdAt == request.time &&
                     incoming().updatedAt == request.time &&
                     (
@@ -122,7 +291,7 @@ service cloud.firestore {
                       isAdmin() && incoming().diff(existing()).affectedKeys().hasOnly(['paid', 'updatedAt'])
                     );
 
-      allow delete: if isEmailVerified() && isValidId(bookingId) && (
+      allow delete: if isSignedIn() && isValidId(bookingId) && (
                     // Case A: Admin can delete any booking
                     isAdmin() ||
                     // Case B: Regular owner can cancel signup ONLY if the event is not finalized
