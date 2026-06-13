@@ -15,6 +15,16 @@ export interface AdminEventViewModel extends AppEvent {
   shuttlecockCostTotal: number;
 }
 
+type AdminSection = 'schedule' | 'events' | 'locations' | 'diagnostics';
+
+interface AdminNavItem {
+  section: AdminSection;
+  label: string;
+  description: string;
+  icon: string;
+  count?: () => number;
+}
+
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-admin',
@@ -50,6 +60,37 @@ export class Admin implements OnInit, OnDestroy {
   spinningTeamsForEventId = signal<string | null>(null);
   teamDraw = signal<TeamDraw | null>(null);
   editingEventId = signal<string | null>(null);
+  activeAdminSection = signal<AdminSection>('schedule');
+
+  adminNavItems: AdminNavItem[] = [
+    {
+      section: 'schedule',
+      label: 'Schedule',
+      description: 'Create or edit events',
+      icon: 'edit_calendar'
+    },
+    {
+      section: 'events',
+      label: 'Events',
+      description: 'Bookings and payments',
+      icon: 'event_note',
+      count: () => this.eventList().length
+    },
+    {
+      section: 'locations',
+      label: 'Locations',
+      description: 'Court rate settings',
+      icon: 'location_on',
+      count: () => this.locationList().length
+    },
+    {
+      section: 'diagnostics',
+      label: 'Diagnostics',
+      description: 'Runtime error logs',
+      icon: 'bug_report',
+      count: () => this.runtimeErrorList().length
+    }
+  ];
 
   // Authenticated User Stats
   isLoggedIn = signal<boolean>(false);
@@ -303,6 +344,7 @@ export class Admin implements OnInit, OnDestroy {
 
   // Set chosen event for participant management view
   selectEvent(eventId: string): void {
+    this.activeAdminSection.set('events');
     this.selectedEventId.set(eventId);
     this.successMessage.set(null);
     this.errorMessage.set(null);
@@ -315,6 +357,10 @@ export class Admin implements OnInit, OnDestroy {
   // Get currently selected event view model
   getSelectedEvent(): AdminEventViewModel | undefined {
     return this.eventList().find(e => e.id === this.selectedEventId());
+  }
+
+  setActiveAdminSection(section: AdminSection): void {
+    this.activeAdminSection.set(section);
   }
 
   formatDate(dateStr: string): string {
@@ -410,6 +456,7 @@ export class Admin implements OnInit, OnDestroy {
       : 1;
 
     this.editingEventId.set(event.id);
+    this.activeAdminSection.set('schedule');
     this.selectedEventId.set(event.id);
     this.successMessage.set(null);
     this.errorMessage.set(null);
