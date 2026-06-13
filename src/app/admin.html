@@ -335,7 +335,7 @@
               @if (getSelectedShuttlecock(); as selectedShuttlecock) {
                 <p class="text-xs text-slate-400 font-sans">{{ selectedShuttlecock.pricePerTube | currency:'USD' }} per tube</p>
               } @else if (shuttlecockList().length === 0) {
-                <p class="text-xs text-amber-700 font-sans">Add a shuttlecock in Locations before scheduling.</p>
+                <p class="text-xs text-amber-700 font-sans">Add a shuttlecock in Pricing before scheduling.</p>
               } @else if (editingEventId()) {
                 <p class="text-xs text-slate-400 font-sans">Stored shuttlecock cost will be preserved unless a tube is selected.</p>
               }

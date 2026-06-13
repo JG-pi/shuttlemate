@@ -83,9 +83,9 @@ export class Admin implements OnInit, OnDestroy {
     },
     {
       section: 'locations',
-      label: 'Locations',
-      description: 'Court rate settings',
-      icon: 'location_on',
+      label: 'Pricing',
+      description: 'Court and shuttle costs',
+      icon: 'sell',
       count: () => this.locationList().length + this.shuttlecockList().length
     },
     {
