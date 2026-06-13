@@ -7,6 +7,7 @@ import { Subscription, combineLatest } from 'rxjs';
 import { FirebaseService, AppEvent, AppBooking, AppLocation, AppRuntimeError, AppShuttlecock, isUserAdmin } from './firebase';
 import { MarkdownPipe } from './markdown';
 import { TeamDraw, createRandomTeamDraw } from './team-draw';
+import { formatEventDateTimeRange } from './event-time';
 
 export interface AdminEventViewModel extends AppEvent {
   participants: AppBooking[];
@@ -426,20 +427,8 @@ export class Admin implements OnInit, OnDestroy {
     this.activeAdminSection.set(section);
   }
 
-  formatDate(dateStr: string): string {
-    try {
-      const date = new Date(dateStr);
-      return date.toLocaleDateString('en-US', {
-        weekday: 'short',
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-    } catch {
-      return dateStr;
-    }
+  formatEventTimeRange(event: AppEvent): string {
+    return formatEventDateTimeRange(event);
   }
 
   getSelectedRateLocation(): AppLocation | undefined {
@@ -510,7 +499,8 @@ export class Admin implements OnInit, OnDestroy {
         payload.additionalInfo,
         payload.cost,
         payload.courtCost,
-        payload.shuttlecockCost
+        payload.shuttlecockCost,
+        payload.durationHours
       );
       
       this.successMessage.set(`Successfully scheduled event "${payload.name}"!`);
@@ -527,7 +517,9 @@ export class Admin implements OnInit, OnDestroy {
     const matchedLocation = this.locationList().find(location => location.name === event.location);
     const courtCost = this.getEventCourtCost(event);
     const shuttlecockCost = this.getEventShuttlecockCost(event);
-    const inferredDuration = matchedLocation && matchedLocation.pricePerCourtHour > 0
+    const inferredDuration = typeof event.durationHours === 'number' && event.durationHours > 0
+      ? event.durationHours
+      : matchedLocation && matchedLocation.pricePerCourtHour > 0
       ? this.roundCurrency(courtCost / matchedLocation.pricePerCourtHour)
       : 1;
 
@@ -601,7 +593,8 @@ export class Admin implements OnInit, OnDestroy {
         additionalInfo: payload.additionalInfo,
         cost: payload.cost,
         courtCost: payload.courtCost,
-        shuttlecockCost: payload.shuttlecockCost
+        shuttlecockCost: payload.shuttlecockCost,
+        durationHours: payload.durationHours
       });
 
       this.successMessage.set(`Updated event "${payload.name}".`);
@@ -641,6 +634,7 @@ export class Admin implements OnInit, OnDestroy {
     cost: number;
     courtCost: number;
     shuttlecockCost: number;
+    durationHours: number;
   } | null {
     const selectedLocation = this.getSelectedRateLocation();
     if (!selectedLocation) {
@@ -656,7 +650,7 @@ export class Admin implements OnInit, OnDestroy {
     }
 
     this.syncCostCalculator();
-    const { name, date, capacity, additionalInfo } = this.eventForm.getRawValue();
+    const { name, date, capacity, additionalInfo, durationHours } = this.eventForm.getRawValue();
     const courtCost = this.calculatedCourtCostPreview;
     const shuttlecockCost = this.calculatedShuttlecockCostPreview;
     const cost = this.roundCurrency(courtCost + shuttlecockCost);
@@ -669,7 +663,8 @@ export class Admin implements OnInit, OnDestroy {
       additionalInfo,
       cost,
       courtCost,
-      shuttlecockCost
+      shuttlecockCost,
+      durationHours: Number(durationHours)
     };
   }
 

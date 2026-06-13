@@ -35,6 +35,7 @@ export interface AppEvent {
   id: string;
   name: string;
   date: string;
+  durationHours?: number;
   capacity: number;
   location: string;
   additionalInfo: string;
@@ -606,7 +607,8 @@ export class FirebaseService {
     additionalInfo: string,
     cost: number,
     courtCost: number,
-    shuttlecockCost: number
+    shuttlecockCost: number,
+    durationHours: number
   ): Promise<void> {
     if (!this.isBrowser) return;
     const path = 'events';
@@ -623,6 +625,7 @@ export class FirebaseService {
         cost,
         courtCost,
         shuttlecockCost,
+        durationHours,
         finalised: false,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),

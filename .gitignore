@@ -4,6 +4,9 @@
 .env*
 !.env.example
 
+# Local draft files
+DRAFT_firestore.rules
+
 # Compiled output
 /dist
 /tmp

@@ -46,6 +46,7 @@ service cloud.firestore {
              data.location is string && data.location.size() <= 256 &&
              data.additionalInfo is string && data.additionalInfo.size() <= 10000 &&
              (data.cost is int || data.cost is float) && data.cost >= 0 &&
+             (!data.keys().hasAny(['durationHours']) || ((data.durationHours is int || data.durationHours is float) && data.durationHours > 0)) &&
              (!data.keys().hasAny(['courtCost']) || ((data.courtCost is int || data.courtCost is float) && data.courtCost >= 0)) &&
              (!data.keys().hasAny(['shuttlecockCost']) || ((data.shuttlecockCost is int || data.shuttlecockCost is float) && data.shuttlecockCost >= 0)) &&
              data.finalised is bool &&
@@ -297,7 +298,7 @@ service cloud.firestore {
                       // If it is already finalised, admins can still modify fields (override),
                       // but we explicitly log that they can change finalized status or details.
                       incoming().finalised != existing().finalised ||
-                      incoming().diff(existing()).affectedKeys().hasAny(['name', 'date', 'capacity', 'location', 'additionalInfo', 'cost', 'courtCost', 'shuttlecockCost', 'finalised', 'updatedAt'])
+                      incoming().diff(existing()).affectedKeys().hasAny(['name', 'date', 'durationHours', 'capacity', 'location', 'additionalInfo', 'cost', 'courtCost', 'shuttlecockCost', 'finalised', 'updatedAt'])
                     );
 
       allow delete: if isAdmin() && isValidId(eventId);

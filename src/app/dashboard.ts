@@ -7,6 +7,7 @@ import { User } from 'firebase/auth';
 import { FirebaseService, AppEvent, AppBooking, isUserAdmin } from './firebase';
 import { MarkdownPipe } from './markdown';
 import { TeamDraw, createRandomTeamDraw } from './team-draw';
+import { formatEventDateTimeRange } from './event-time';
 
 export interface EventViewModel extends AppEvent {
   participants: AppBooking[];
@@ -135,20 +136,8 @@ export class Dashboard implements OnInit, OnDestroy {
     }
   }
 
-  formatDate(dateStr: string): string {
-    try {
-      const date = new Date(dateStr);
-      return date.toLocaleDateString('en-US', {
-        weekday: 'short',
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-    } catch {
-      return dateStr;
-    }
+  formatEventTimeRange(event: AppEvent): string {
+    return formatEventDateTimeRange(event);
   }
 
   async handleJoinEvent(eventVm: EventViewModel): Promise<void> {

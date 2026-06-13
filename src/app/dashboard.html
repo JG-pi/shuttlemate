@@ -136,7 +136,7 @@
 
                   <!-- Date & Title Header -->
                   <span class="text-[11px] text-indigo-600 font-bold uppercase tracking-widest font-mono">
-                    {{ formatDate(event.date) }}
+                    {{ formatEventTimeRange(event) }}
                   </span>
                   <h3 class="text-2xl sm:text-3xl font-display font-black tracking-tight text-slate-900 mt-1">
                     {{ event.name }}
@@ -155,7 +155,7 @@
                       <div class="w-7 h-7 bg-slate-50 rounded-lg flex items-center justify-center text-slate-400 border border-slate-100">
                         <mat-icon class="text-lg leading-none">schedule</mat-icon>
                       </div>
-                      <span class="text-slate-750">{{ formatDate(event.date) }}</span>
+                      <span class="text-slate-750">{{ formatEventTimeRange(event) }}</span>
                     </div>
                   </div>
                 </div>
