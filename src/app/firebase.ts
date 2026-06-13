@@ -1,7 +1,7 @@
 import { Injectable, inject, PLATFORM_ID, signal } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { initializeApp, getApp, getApps, FirebaseApp } from 'firebase/app';
-import { getAuth, Auth, User, onAuthStateChanged, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, GoogleAuthProvider, getRedirectResult, setPersistence, browserLocalPersistence, inMemoryPersistence, signInWithPopup, browserPopupRedirectResolver } from 'firebase/auth';
+import { getAuth, Auth, User, onAuthStateChanged, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, GoogleAuthProvider, getRedirectResult, setPersistence, browserLocalPersistence, inMemoryPersistence, signInWithPopup, signInWithRedirect, browserPopupRedirectResolver } from 'firebase/auth';
 import { getFirestore, Firestore, collection, doc, setDoc, updateDoc, deleteDoc, query, where, onSnapshot, getDocFromServer, getDoc, serverTimestamp, Timestamp, orderBy, limit } from 'firebase/firestore';
 import { firebaseConfig } from './firebase.config';
 import { Observable, BehaviorSubject } from 'rxjs';
@@ -463,8 +463,6 @@ export class FirebaseService {
     provider.setCustomParameters({ prompt: 'select_account' });
 
     try {
-      // Keep Google sign-in inside the current app session. Redirect auth can strand
-      // users on /__/auth/handler in embedded browsers or storage-partitioned contexts.
       const credential = await signInWithPopup(this.auth, provider, browserPopupRedirectResolver);
       await this.syncUserProfile(credential.user, 'google-popup-profile-sync');
       this.userSubject.next(credential.user);
@@ -472,13 +470,24 @@ export class FirebaseService {
       this.authReadySubject.next(true);
       return credential.user;
     } catch (e) {
+      const err = e as { code?: string; message?: string };
+      const popupUnavailable =
+        err.code === 'auth/popup-blocked' ||
+        err.code === 'auth/operation-not-supported-in-environment' ||
+        err.code === 'auth/cancelled-popup-request';
+
+      if (popupUnavailable && this.canUseRedirectPersistence()) {
+        await signInWithRedirect(this.auth, provider, browserPopupRedirectResolver);
+        return null;
+      }
+
       console.error('Google sign in error', e);
       void this.recordRuntimeError({
         area: 'login',
         stage: 'google-sign-in',
         error: e,
         context: {
-          redirectFallbackDisabled: true,
+          strategy: 'popup-first',
           redirectPersistenceAvailable: this.canUseRedirectPersistence()
         }
       });
