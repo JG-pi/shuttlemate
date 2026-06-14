@@ -57,6 +57,14 @@
               "optimization": false,
               "extractLicenses": false,
               "sourceMap": true
+            },
+            "dev": {
+              "fileReplacements": [
+                {
+                  "replace": "src/app/firebase.config.ts",
+                  "with": "src/app/firebase.config.development.ts"
+                }
+              ]
             }
           },
           "defaultConfiguration": "production"

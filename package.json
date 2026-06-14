@@ -6,6 +6,8 @@
     "start": "ng serve",
     "dev": "ng serve --port=3000 --host=localhost --allowed-hosts=true",
     "build": "ng build",
+    "build:dev": "node --env-file-if-exists=.env.development scripts/angular-dev.mjs build",
+    "start:dev": "node --env-file-if-exists=.env.development scripts/angular-dev.mjs serve",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "lint": "ng lint",
