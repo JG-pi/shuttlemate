@@ -1,19 +1,19 @@
-declare const FIREBASE_API_KEY: string;
-declare const FIREBASE_AUTH_DOMAIN: string;
-declare const FIREBASE_PROJECT_ID: string;
-declare const FIREBASE_STORAGE_BUCKET: string;
-declare const FIREBASE_MESSAGING_SENDER_ID: string;
-declare const FIREBASE_APP_ID: string;
-declare const FIREBASE_MEASUREMENT_ID: string;
-declare const FIREBASE_FIRESTORE_DATABASE_ID: string;
+declare const STAGING_FIREBASE_API_KEY: string;
+declare const STAGING_FIREBASE_AUTH_DOMAIN: string;
+declare const STAGING_FIREBASE_PROJECT_ID: string;
+declare const STAGING_FIREBASE_STORAGE_BUCKET: string;
+declare const STAGING_FIREBASE_MESSAGING_SENDER_ID: string;
+declare const STAGING_FIREBASE_APP_ID: string;
+declare const STAGING_FIREBASE_MEASUREMENT_ID: string;
+declare const STAGING_FIREBASE_FIRESTORE_DATABASE_ID: string;
 
 export const firebaseConfig = {
-  apiKey: FIREBASE_API_KEY,
-  authDomain: FIREBASE_AUTH_DOMAIN,
-  projectId: FIREBASE_PROJECT_ID,
-  storageBucket: FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: FIREBASE_MESSAGING_SENDER_ID,
-  appId: FIREBASE_APP_ID,
-  measurementId: FIREBASE_MEASUREMENT_ID,
-  firestoreDatabaseId: FIREBASE_FIRESTORE_DATABASE_ID
+  apiKey: STAGING_FIREBASE_API_KEY,
+  authDomain: STAGING_FIREBASE_AUTH_DOMAIN,
+  projectId: STAGING_FIREBASE_PROJECT_ID,
+  storageBucket: STAGING_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: STAGING_FIREBASE_MESSAGING_SENDER_ID,
+  appId: STAGING_FIREBASE_APP_ID,
+  measurementId: STAGING_FIREBASE_MEASUREMENT_ID,
+  firestoreDatabaseId: STAGING_FIREBASE_FIRESTORE_DATABASE_ID
 };

@@ -3,14 +3,14 @@ import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 
 const envDefines = {
-  STAGING_FIREBASE_API_KEY: 'STAGING_FIREBASE_API_KEY',
-  STAGING_FIREBASE_AUTH_DOMAIN: 'STAGING_FIREBASE_AUTH_DOMAIN',
-  STAGING_FIREBASE_PROJECT_ID: 'STAGING_FIREBASE_PROJECT_ID',
-  STAGING_FIREBASE_STORAGE_BUCKET: 'STAGING_FIREBASE_STORAGE_BUCKET',
-  STAGING_FIREBASE_MESSAGING_SENDER_ID: 'STAGING_FIREBASE_MESSAGING_SENDER_ID',
-  STAGING_FIREBASE_APP_ID: 'STAGING_FIREBASE_APP_ID',
-  STAGING_FIREBASE_MEASUREMENT_ID: 'STAGING_FIREBASE_MEASUREMENT_ID',
-  STAGING_FIREBASE_FIRESTORE_DATABASE_ID: 'STAGING_FIREBASE_FIRESTORE_DATABASE_ID'
+  DEV_FIREBASE_API_KEY: 'DEV_FIREBASE_API_KEY',
+  DEV_FIREBASE_AUTH_DOMAIN: 'DEV_FIREBASE_AUTH_DOMAIN',
+  DEV_FIREBASE_PROJECT_ID: 'DEV_FIREBASE_PROJECT_ID',
+  DEV_FIREBASE_STORAGE_BUCKET: 'DEV_FIREBASE_STORAGE_BUCKET',
+  DEV_FIREBASE_MESSAGING_SENDER_ID: 'DEV_FIREBASE_MESSAGING_SENDER_ID',
+  DEV_FIREBASE_APP_ID: 'DEV_FIREBASE_APP_ID',
+  DEV_FIREBASE_MEASUREMENT_ID: 'DEV_FIREBASE_MEASUREMENT_ID',
+  DEV_FIREBASE_FIRESTORE_DATABASE_ID: 'DEV_FIREBASE_FIRESTORE_DATABASE_ID'
 };
 
 const command = process.argv[2];
@@ -18,7 +18,7 @@ const extraArgs = process.argv.slice(3);
 const missing = Object.values(envDefines).filter((name) => !process.env[name]);
 
 if (missing.length > 0) {
-  console.error(`Missing staging Firebase env vars: ${missing.join(', ')}`);
+  console.error(`Missing dev Firebase env vars: ${missing.join(', ')}`);
   process.exit(1);
 }
 
@@ -27,14 +27,14 @@ const defineArgs = Object.entries(envDefines).map(([identifier, envName]) => {
 });
 
 const ngArgsByCommand = {
-  build: ['build', '--configuration', 'production,staging'],
-  serve: ['serve', '--build-target', 'app:build:development,staging']
+  build: ['build', '--configuration', 'development,dev'],
+  serve: ['serve', '--build-target', 'app:build:development,dev']
 };
 
 const ngArgs = ngArgsByCommand[command];
 
 if (!ngArgs) {
-  console.error('Usage: node scripts/angular-staging.mjs <build|serve> [angular args...]');
+  console.error('Usage: node scripts/angular-dev.mjs <build|serve> [angular args...]');
   process.exit(1);
 }
 
