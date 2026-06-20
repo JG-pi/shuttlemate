@@ -86,7 +86,9 @@ export class Dashboard implements OnInit, OnDestroy {
       next: ([events, bookings]) => {
         // Build individual event view models
         const viewModels: EventViewModel[] = events.map(e => {
-          const eventBookings = bookings.filter(b => b.eventId === e.id);
+          const eventBookings = bookings
+            .filter(b => b.eventId === e.id)
+            .sort((a, b) => a.userName.localeCompare(b.userName, undefined, { sensitivity: 'base' }));
           const participantCount = eventBookings.length;
           
           // Cost split calculation: split equally by number of participants (minimum 1, or show shared logic if 0)

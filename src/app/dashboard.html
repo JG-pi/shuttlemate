@@ -250,27 +250,53 @@
                 </div>
               </div>
 
-              <!-- 3. Additional Markdown Info Block (span-8) -->
-              @if (event.additionalInfo) {
-                <div class="md:col-span-8 bg-slate-100 border border-slate-200/60 rounded-[2rem] p-6 sm:p-8 shadow-sm flex flex-col justify-between">
-                  <div>
-                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 font-sans select-none">Event Notes</h4>
-                    <div 
-                      class="prose prose-sm prose-slate max-w-none text-slate-650 text-sm leading-relaxed prose-headings:font-display prose-headings:font-bold prose-headings:text-slate-900 prose-ul:list-disc prose-ul:pl-5 prose-p:my-1.5"
-                      [innerHTML]="event.additionalInfo | markdown"
-                      [id]="'desc-rendered-' + event.id"
-                    ></div>
+              <!-- 3. Left column social and notes panels (span-8) -->
+              <div class="md:col-span-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-white border border-slate-200 rounded-[2rem] p-6 sm:p-7 shadow-sm flex flex-col">
+                  <div class="flex items-center justify-between gap-3">
+                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider font-sans select-none">Players</h4>
+                    <span class="text-xs font-bold text-slate-700 font-mono">{{ event.participantCount }} joined</span>
                   </div>
+
+                  @if (event.participants.length === 0) {
+                    <div class="mt-5 flex min-h-36 flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-center">
+                      <mat-icon class="text-2xl text-slate-300">people_outline</mat-icon>
+                      <p class="mt-2 text-xs font-bold text-slate-500">No players booked yet.</p>
+                    </div>
+                  } @else {
+                    <div class="mt-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-2.5">
+                      @for (player of event.participants; track player.userId) {
+                        <div class="min-w-0 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 flex items-center gap-2.5">
+                          <div class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-indigo-50 text-indigo-600 border border-indigo-100">
+                            <mat-icon class="text-base leading-none">person</mat-icon>
+                          </div>
+                          <span class="min-w-0 break-words text-sm font-bold text-slate-800 leading-tight">{{ player.userName }}</span>
+                        </div>
+                      }
+                    </div>
+                  }
                 </div>
-              } @else {
-                <!-- Full width placeholder if no additional info -->
-                <div class="md:col-span-8 bg-slate-100/50 border border-dashed border-slate-200 rounded-[2rem] p-8 flex items-center justify-center text-slate-400">
-                  <div class="text-center font-sans space-y-1">
-                    <mat-icon class="text-xl">notes</mat-icon>
-                    <p class="text-xs text-slate-450 font-medium font-sans">No additional notes for this event.</p>
+
+                @if (event.additionalInfo) {
+                  <div class="bg-slate-100 border border-slate-200/60 rounded-[2rem] p-6 sm:p-8 shadow-sm flex flex-col justify-between">
+                    <div>
+                      <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 font-sans select-none">Event Notes</h4>
+                      <div
+                        class="prose prose-sm prose-slate max-w-none text-slate-650 text-sm leading-relaxed prose-headings:font-display prose-headings:font-bold prose-headings:text-slate-900 prose-ul:list-disc prose-ul:pl-5 prose-p:my-1.5"
+                        [innerHTML]="event.additionalInfo | markdown"
+                        [id]="'desc-rendered-' + event.id"
+                      ></div>
+                    </div>
                   </div>
-                </div>
-              }
+                } @else {
+                  <div class="bg-slate-100/50 border border-dashed border-slate-200 rounded-[2rem] p-8 flex items-center justify-center text-slate-400">
+                    <div class="text-center font-sans space-y-1">
+                      <mat-icon class="text-xl">notes</mat-icon>
+                      <p class="text-xs text-slate-450 font-medium font-sans">No additional notes for this event.</p>
+                    </div>
+                  </div>
+                }
+              </div>
 
               <!-- 4. Registration Status & Signup Buttons (span-4) - Styled in Slate dark bento box -->
               <div class="md:col-span-4 bg-slate-900 text-white rounded-[2rem] p-6 sm:p-8 flex flex-col justify-between gap-6 shadow-xl shadow-slate-200/40">
